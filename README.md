@@ -288,6 +288,16 @@ docker compose exec backend python -m app.cli set-password `
   --email admin@example.com --password "your-password"
 ```
 
+### Run the backend-free demo locally
+
+```powershell
+cd frontend
+$env:NEXT_PUBLIC_DEMO_MODE = "true"
+pnpm dev
+```
+
+Sign in with `admin@dossier.dev` / `demo`. No Docker services are needed.
+
 ### Walk the demo
 
 1. Open **Departments → General**.
@@ -316,6 +326,7 @@ Then register its assets under **Data → Sources** and grant them to a departme
 | Frontend types | `pnpm --dir frontend typecheck` |
 | Frontend build | `pnpm --dir frontend build` |
 | Browser journeys | `pnpm --dir frontend test:e2e` |
+| Demo journeys | `NEXT_PUBLIC_DEMO_MODE=true pnpm --dir frontend test:e2e e2e/demo.spec.ts` |
 
 The backend suite covers authentication, refresh rotation, permission resolution, sync
 failure isolation, snapshot promotion, generation isolation, SMTP retries, schedule
@@ -336,6 +347,35 @@ pnpm --dir frontend test:e2e
 ---
 
 ## Deployment
+
+
+### UI demo on Vercel (no backend)
+
+The console ships with a built-in demo API, so it can be shown on Vercel without hosting
+the backend, database, Redis, Celery, Ollama, or SMTP.
+
+1. Import the repository in Vercel.
+2. Set **Root Directory** to `frontend`.
+3. Add `NEXT_PUBLIC_DEMO_MODE=true` for Production and Preview.
+4. Deploy.
+
+Or from the CLI:
+
+```powershell
+cd frontend
+vercel login
+vercel env add NEXT_PUBLIC_DEMO_MODE production
+vercel --prod
+```
+
+Sign in with `admin@dossier.dev` / `demo` (the form is prefilled). The demo serves sample
+departments, sources, templates, schedules, executions, users, and audit entries from an
+in-memory store. It is fully navigable, including previews and "Send now". Changes are not
+persisted and reset when the serverless instance restarts. This mode is for demonstrations
+only; use the full stack for real generation and delivery.
+
+The demo API lives at `/demo-api/v1` and is only active when `NEXT_PUBLIC_DEMO_MODE=true`.
+The normal `/api/v1` client is untouched in every other environment.
 
 ### The split
 

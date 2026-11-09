@@ -262,6 +262,7 @@ export interface MailExecutionSummary extends MailExecution {
 
 export interface MailDelivery {
   id: string;
+  execution_id?: string;
   email: string;
   status: MailDeliveryStatus;
   error: string | null;

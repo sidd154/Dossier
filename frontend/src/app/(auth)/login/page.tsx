@@ -23,6 +23,8 @@ import { Label } from "@/components/ui/label";
 import { ApiRequestError, api } from "@/lib/api";
 import type { TokenResponse, User } from "@/lib/types";
 
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 const schema = z.object({
   email: z.email("Enter a valid email address"),
   password: z.string().min(1, "Enter your password"),
@@ -54,7 +56,10 @@ export default function LoginPage() {
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: {
+      email: DEMO_MODE ? "admin@dossier.dev" : "",
+      password: DEMO_MODE ? "demo" : "",
+    },
   });
 
   const mutation = useMutation({
@@ -162,7 +167,9 @@ export default function LoginPage() {
         </Card>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Need access? Contact your platform administrator.
+          {DEMO_MODE
+            ? "Demo mode — any credentials sign you in. All data is sample data."
+            : "Need access? Contact your platform administrator."}
         </p>
       </div>
     </main>

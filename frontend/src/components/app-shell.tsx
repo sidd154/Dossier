@@ -32,6 +32,8 @@ import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { User } from "@/lib/types";
 
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 interface NavItem {
   href: string;
   label: string;
@@ -170,6 +172,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          {DEMO_MODE ? (
+            <div className="mb-5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+              Demo mode — sample data. Changes are kept in memory and reset when
+              the demo instance restarts.
+            </div>
+          ) : null}
           {children}
         </main>
       </div>

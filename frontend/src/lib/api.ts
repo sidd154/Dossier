@@ -23,10 +23,16 @@ export function queryString(params: Record<string, QueryValue>): string {
   return serialised ? `?${serialised}` : "";
 }
 
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
+function resolvePath(path: string): string {
+  return DEMO_MODE ? path.replace(/^\/api\/v1/, "/demo-api/v1") : path;
+}
+
 let refreshInFlight: Promise<boolean> | null = null;
 
 async function refreshSession(): Promise<boolean> {
-  refreshInFlight ??= fetch("/api/v1/auth/refresh", {
+  refreshInFlight ??= fetch(resolvePath("/api/v1/auth/refresh"), {
     method: "POST",
     credentials: "include",
   })
@@ -43,7 +49,7 @@ async function request<T>(
   init: RequestInit = {},
   allowRetry = true,
 ): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(resolvePath(path), {
     ...init,
     credentials: "include",
     headers: {
