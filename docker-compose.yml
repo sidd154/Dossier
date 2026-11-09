@@ -1,0 +1,86 @@
+name: dossier
+
+x-backend-env: &backend-env
+  DATABASE_URL: postgresql+asyncpg://dossier:dossier@db:5432/dossier
+  TEST_DATABASE_URL: postgresql+asyncpg://dossier:dossier@db:5432/dossier_test
+  REDIS_URL: redis://redis:6379/0
+  OLLAMA_BASE_URL: http://host.docker.internal:11434
+
+x-backend-base: &backend-base
+  env_file:
+    - .env
+  environment: *backend-env
+  volumes:
+    - ./backend:/app
+
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: dossier
+      POSTGRES_PASSWORD: dossier
+      POSTGRES_DB: dossier
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dossier -d dossier"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  # Development SMTP sink. Read delivered mail at http://localhost:8025.
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  backend:
+    <<: *backend-base
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Daily sync workers. Start with: docker compose --profile workers up -d
+  worker:
+    <<: *backend-base
+    image: dossier-backend:latest
+    profiles: ["workers"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A app.workers.celery_app:celery_app worker --loglevel=INFO --concurrency=2
+
+  beat:
+    <<: *backend-base
+    image: dossier-backend:latest
+    profiles: ["workers"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: celery -A app.workers.celery_app:celery_app beat --loglevel=INFO
+
+volumes:
+  db_data:
