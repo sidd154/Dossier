@@ -348,6 +348,10 @@ pnpm --dir frontend test:e2e
 
 ## Deployment
 
+For a single Ubuntu server with PM2 and Nginx, see the complete step-by-step guide in
+[`DEPLOYMENT.md`](./DEPLOYMENT.md), with ready-to-copy PM2, Nginx, environment, deploy,
+and backup files under [`deploy/`](./deploy).
+
 
 ### UI demo on Vercel (no backend)
 
