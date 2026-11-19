@@ -16,5 +16,6 @@ def get_llm_provider() -> LLMProvider:
             base_url=settings.ollama_base_url,
             model=settings.ollama_chat_model,
             timeout=float(settings.llm_timeout_seconds),
+            api_key=settings.ollama_api_key,
         )
     raise AppError(f"Unsupported LLM provider: {settings.llm_provider}")

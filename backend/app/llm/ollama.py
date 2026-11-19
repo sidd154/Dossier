@@ -9,10 +9,24 @@ from app.llm.provider import ChatMessage
 
 
 class OllamaProvider:
-    def __init__(self, *, base_url: str, model: str, timeout: float = 120.0) -> None:
+    def __init__(
+        self,
+        *,
+        base_url: str,
+        model: str,
+        timeout: float = 120.0,
+        api_key: str | None = None,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.timeout = timeout
+        self.api_key = api_key
+
+    @property
+    def _headers(self) -> dict[str, str]:
+        if not self.api_key:
+            return {}
+        return {"Authorization": f"Bearer {self.api_key}"}
 
     async def complete(
         self,
@@ -37,7 +51,11 @@ class OllamaProvider:
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.post(f"{self.base_url}/api/chat", json=payload)
+                response = await client.post(
+                    f"{self.base_url}/api/chat",
+                    json=payload,
+                    headers=self._headers,
+                )
         except httpx.HTTPError as exc:
             raise UpstreamError("The language model is unavailable") from exc
 
