@@ -49,6 +49,44 @@ async def test_complete_sends_the_expected_payload(
     assert captured[0]["options"]["num_predict"] == 250
 
 
+async def test_api_key_is_sent_as_bearer_token(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: list[dict[str, str]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(dict(request.headers))
+        return httpx.Response(200, json={"message": {"content": "ok"}})
+
+    _patch(monkeypatch, handler)
+    provider = OllamaProvider(
+        base_url="https://ollama.com",
+        model="test-model",
+        api_key="secret-key",
+    )
+
+    await provider.complete([ChatMessage(role="user", content="hi")])
+
+    assert captured[0]["authorization"] == "Bearer secret-key"
+
+
+async def test_no_authorization_header_without_api_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: list[dict[str, str]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(dict(request.headers))
+        return httpx.Response(200, json={"message": {"content": "ok"}})
+
+    _patch(monkeypatch, handler)
+    provider = OllamaProvider(base_url="http://ollama:11434", model="test-model")
+
+    await provider.complete([ChatMessage(role="user", content="hi")])
+
+    assert "authorization" not in captured[0]
+
+
 async def test_http_failure_is_reported(monkeypatch: pytest.MonkeyPatch) -> None:
     _patch(monkeypatch, lambda _request: httpx.Response(500, text="boom"))
     provider = OllamaProvider(base_url="http://ollama:11434", model="m")

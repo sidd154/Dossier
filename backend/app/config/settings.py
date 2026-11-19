@@ -49,6 +49,9 @@ class Settings(BaseSettings):
 
     llm_provider: Literal["ollama", "openai", "anthropic"] = "ollama"
     ollama_base_url: str = "http://host.docker.internal:11434"
+    # Sent as a bearer token. Required for Ollama Cloud (https://ollama.com); leave
+    # empty for a local Ollama instance that does not authenticate.
+    ollama_api_key: str | None = None
     ollama_chat_model: str = "deepseek-v4.1-flash:cloud"
     llm_timeout_seconds: int = 120
 
