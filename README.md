@@ -348,9 +348,10 @@ pnpm --dir frontend test:e2e
 
 ## Deployment
 
-For a single Ubuntu server with PM2 and Nginx, see the complete step-by-step guide in
-[`DEPLOYMENT.md`](./DEPLOYMENT.md), with ready-to-copy PM2, Nginx, environment, deploy,
-and backup files under [`deploy/`](./deploy).
+For every deployment option, the complete environment-variable reference, and first-run
+setup, see [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md). For a single Ubuntu server with
+PM2 and Nginx, see the long-form walkthrough in [`DEPLOYMENT.md`](./DEPLOYMENT.md), with
+ready-to-copy PM2, Nginx, environment, deploy, and backup files under [`deploy/`](./deploy).
 
 
 ### UI demo on Vercel (no backend)
@@ -479,6 +480,7 @@ Backend variables live in `.env` (see `.env.example`). The important ones:
 | `ACCESS_TOKEN_TTL_MINUTES`, `REFRESH_TOKEN_TTL_DAYS` | Session lifetimes |
 | `COOKIE_SECURE` | Must be `true` behind HTTPS |
 | `OLLAMA_BASE_URL`, `OLLAMA_CHAT_MODEL` | Mail generation provider |
+| `OLLAMA_API_KEY` | Bearer token for Ollama Cloud; leave empty for a local instance |
 | `DAILY_SYNC_HOUR_UTC` | When the daily connector sync runs |
 | `MAIL_MAX_ROWS_PER_SOURCE` | Sample rows per source in a prompt (default 50) |
 | `MAIL_AGGREGATE_ROW_CAP` | Rows considered for numeric aggregates (default 2000) |
